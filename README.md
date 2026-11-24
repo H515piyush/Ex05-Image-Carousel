@@ -1,67 +1,45 @@
-# React + Vite
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
-
-Currently, two official plugins are available:
-
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the Oxlint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
-# Ex04 Simple Calculator - React Project
-## Date: 20/11/2026
-## Name : Piyush Kumar
-## Reg No : 212223220075
+# Ex05 Image Carousel
+## Date:24.11.2026
+## Name:Piyush Kumar
+## Reg No:212223220075
 
 ## AIM
-To  develop a Simple Calculator using React.js with clean and responsive design, ensuring a smooth user experience across different screen sizes.
+To create a Image Carousel using React 
 
 ## ALGORITHM
-### STEP 1
-Create a React App.
+### STEP 1 Initial Setup:
+Input: A list of images to display in the carousel.
 
-### STEP 2
-Open a terminal and run:
-  <ul><li>npx create-react-app simple-calculator</li>
-  <li>cd simple-calculator</li>
-  <li>npm start</li></ul>
+Output: A component displaying the images with navigation controls (e.g., next/previous buttons).
 
-### STEP 3
-Inside the src/ folder, create a new file Calculator.js and define the basic structure.
+### Step 2 State Management:
+Use a state variable (currentIndex) to track the index of the current image displayed.
 
-### STEP 4
-Plan the UI: Display screen, number buttons (0-9), operators (+, -, *, /), clear (C), and equal (=).
+The carousel starts with the first image, so initialize currentIndex to 0.
 
-### STEP 5
-Create a new file Calculator.css in src/ and add the styling.
+### Step 3 Navigation Controls:
+Next Image: When the "Next" button is clicked, increment currentIndex.
 
-### STEP 6
-Open src/App.js and modify it.
+If currentIndex is at the end of the image list (last image), loop back to the first image using modulo:
+currentIndex = (currentIndex + 1) % images.length;
 
-### STEP 7
-Start the development server.
-  npm start
+Previous Image: When the "Previous" button is clicked, decrement currentIndex.
 
-### STEP 8
-Open http://localhost:3000/ in the browser.
+If currentIndex is at the beginning (first image), loop back to the last image:
+currentIndex = (currentIndex - 1 + images.length) % images.length;
 
-### STEP 9
-Test the calculator by entering numbers and operations.
+### Step 4 Displaying the Image:
+The currentIndex determines which image is displayed.
 
-### STEP 10
-Fix styling issues and refine content placement.
+Using the currentIndex, display the corresponding image from the images list.
 
-### STEP 11
-Deploy the website.
+### Step 5 Auto-Rotation:
+Set an interval to automatically change the image after a set amount of time (e.g., 3 seconds).
 
-### STEP 12
-Upload to GitHub Pages for free hosting.
+Use setInterval to call the nextImage() function at regular intervals.
+
+Clean up the interval when the component unmounts using clearInterval to prevent memory leaks.
 
 ## PROGRAM
 ## App.jsx
@@ -71,163 +49,80 @@ import React, { useState, useEffect } from "react";
 import "./App.css";
 
 function App() {
-  const [display, setDisplay] = useState("0");
-  const [history, setHistory] = useState("");
-
-  const calculate = (expression) => {
-    try {
-      if (!/^[0-9+\-*/%.() ]+$/.test(expression)) {
-        return "Error";
-      }
-
-      const result = Function(
-        '"use strict"; return (' + expression + ')'
-      )();
-
-      if (!Number.isFinite(result)) return "Error";
-
-      return String(Number(result.toFixed(10)));
-    } catch {
-      return "Error";
+  const images = [
+    {
+      url: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=1200",
+      title: "Explore the Beauty",
+      description: "Discover breathtaking landscapes and beautiful destinations."
+    },
+    {
+      url: "https://images.unsplash.com/photo-1470770841072-f978cf4d019e?w=1200",
+      title: "Adventure Awaits",
+      description: "Experience nature and create unforgettable memories."
     }
+  ];
+
+  const [index, setIndex] = useState(0);
+
+  const nextSlide = () => {
+    setIndex((prev) => (prev + 1) % images.length);
   };
 
-  const handleClick = (value) => {
-    if (value === "AC") {
-      setDisplay("0");
-      setHistory("");
-    }
-    else if (value === "DEL") {
-      setDisplay(prev =>
-        prev.length > 1 ? prev.slice(0, -1) : "0"
-      );
-    }
-    else if (value === "=") {
-      const result = calculate(display);
-
-      if (result !== "Error") {
-        setHistory(display + " =");
-      }
-
-      setDisplay(result);
-    }
-    else {
-      setDisplay(prev =>
-        prev === "0" || prev === "Error"
-          ? value
-          : prev + value
-      );
-    }
+  const prevSlide = () => {
+    setIndex((prev) => (prev - 1 + images.length) % images.length);
   };
 
   useEffect(() => {
-    const handleKey = (e) => {
-      if ("0123456789+-*/.%".includes(e.key) && e.key.length === 1) {
-        handleClick(e.key);
-      }
-      else if (e.key === "Enter" || e.key === "=") {
-        handleClick("=");
-      }
-      else if (e.key === "Backspace") {
-        handleClick("DEL");
-      }
-      else if (e.key === "Escape") {
-        handleClick("AC");
-      }
-    };
-
-    window.addEventListener("keydown", handleKey);
-
-    return () =>
-      window.removeEventListener("keydown", handleKey);
-  });
-
-  const buttons = [
-    { text: "AC", type: "clear" },
-    { text: "DEL", type: "clear" },
-    { text: "%", type: "operator" },
-    { text: "/", type: "operator" },
-
-    { text: "7" },
-    { text: "8" },
-    { text: "9" },
-    { text: "*", type: "operator" },
-
-    { text: "4" },
-    { text: "5" },
-    { text: "6" },
-    { text: "-", type: "operator" },
-
-    { text: "1" },
-    { text: "2" },
-    { text: "3" },
-    { text: "+", type: "operator" },
-
-    { text: "00" },
-    { text: "0" },
-    { text: "." },
-    { text: "=", type: "equal" }
-  ];
+    const timer = setInterval(nextSlide, 5000);
+    return () => clearInterval(timer);
+  }, []);
 
   return (
     <div className="app">
+      <h1>Discover The World</h1>
+      <p className="subtitle">Explore beautiful places with us</p>
 
-      <div className="calculator">
+      <div className="carousel">
+        {images.map((image, i) => (
+          <div
+            key={i}
+            className={`slide ${index === i ? "active" : ""}`}
+          >
+            <img src={image.url} alt={image.title} />
 
-        <div className="top">
-          <div>
-            <span className="logo">✦</span>
-            <span className="brand">CALCULATOR</span>
+            <div className="overlay">
+              <h2>{image.title}</h2>
+              <p>{image.description}</p>
+              <button className="explore">Explore Now →</button>
+            </div>
           </div>
-          <span className="mode">● ONLINE</span>
-        </div>
+        ))}
 
-        <div className="screen">
-
-          <p className="history">{history || "Welcome back!"}</p>
-
-          <div className="display">
-            {display}
-          </div>
-
-          <p className="screen-label">RESULT</p>
-
-        </div>
-
-        <div className="keypad">
-
-          {buttons.map((btn, index) => (
-            <button
-              key={index}
-              className={`key ${btn.type || ""}`}
-              onClick={() => handleClick(btn.text)}
-            >
-              {btn.text === "*" ? "×" :
-               btn.text === "/" ? "÷" :
-               btn.text === "DEL" ? "⌫" :
-               btn.text}
-            </button>
-          ))}
-
-        </div>
-
-        <div className="footer">
-          <span>POWERED BY REACT</span>
-          <span>✦ SMART CALCULATOR</span>
-        </div>
-
+        <button className="arrow left" onClick={prevSlide}>❮</button>
+        <button className="arrow right" onClick={nextSlide}>❯</button>
       </div>
 
+      <div className="dots">
+        {images.map((_, i) => (
+          <span
+            key={i}
+            className={index === i ? "dot active-dot" : "dot"}
+            onClick={() => setIndex(i)}
+          ></span>
+        ))}
+      </div>
+
+      <p className="counter">
+        0{index + 1} / 02
+      </p>
     </div>
   );
 }
 
 export default App;
 ```
-## App.css
+# App.css
 ```
-
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
 * {
   margin: 0;
@@ -236,180 +131,179 @@ export default App;
 }
 
 body {
-  font-family: 'Inter', sans-serif;
-  background: #090b16;
+  font-family: 'Segoe UI', sans-serif;
+  background: linear-gradient(135deg, #141e30, #243b55);
+  min-height: 100vh;
 }
 
 .app {
-  min-height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 25px;
-  background:
-    radial-gradient(circle at 20% 20%, #31205d, transparent 35%),
-    radial-gradient(circle at 80% 80%, #172b51, transparent 35%),
-    #090b16;
-}
-
-.calculator {
-  width: 370px;
-  padding: 28px;
-  border-radius: 28px;
-  background: #191b2b;
-  border: 1px solid #38384d;
-  box-shadow: 0 25px 70px rgba(0,0,0,.5);
-}
-
-.top {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 30px;
-}
-
-.logo {
-  color: #a78bfa;
-  font-size: 25px;
-  margin-right: 8px;
-}
-
-.brand {
+  text-align: center;
+  padding: 45px 20px;
   color: white;
-  font-size: 13px;
-  font-weight: 800;
+}
+
+h1 {
+  font-size: 38px;
   letter-spacing: 2px;
+  margin-bottom: 10px;
 }
 
-.mode {
-  color: #4ade80;
-  font-size: 9px;
+.subtitle {
+  color: #cbd5e1;
+  margin-bottom: 35px;
 }
 
-.screen {
-  min-height: 145px;
-  padding: 20px 5px;
+.carousel {
+  position: relative;
+  max-width: 950px;
+  height: 480px;
+  margin: auto;
+  overflow: hidden;
+  border-radius: 22px;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.4);
+}
+
+.slide {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  transition: opacity 0.8s ease;
+}
+
+.slide.active {
+  opacity: 1;
+}
+
+.slide img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
   display: flex;
   flex-direction: column;
-  justify-content: flex-end;
-  align-items: flex-end;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(
+    transparent,
+    rgba(0,0,0,0.75)
+  );
+  padding: 25px;
+  color: white;
 }
 
-.history {
-  color: #888ba3;
-  font-size: 13px;
+.overlay h2 {
+  font-size: 42px;
   margin-bottom: 15px;
 }
 
-.display {
-  color: white;
-  font-size: clamp(30px, 8vw, 43px);
-  font-weight: 700;
-  width: 100%;
-  text-align: right;
-  overflow-x: auto;
-  white-space: nowrap;
+.overlay p {
+  font-size: 17px;
+  margin-bottom: 25px;
 }
 
-.screen-label {
-  color: #a78bfa;
-  font-size: 10px;
-  letter-spacing: 3px;
-  margin-top: 12px;
-}
-
-.keypad {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
-  margin-top: 15px;
-}
-
-.key {
-  height: 65px;
+.explore {
+  padding: 13px 28px;
   border: none;
-  border-radius: 18px;
-  background: #25283b;
-  color: white;
-  font-size: 21px;
-  font-weight: 600;
+  border-radius: 30px;
+  background: #ffffff;
+  color: #243b55;
+  font-weight: bold;
   cursor: pointer;
-  transition: .2s;
+  transition: 0.3s;
 }
 
-.key:hover {
-  background: #383c55;
-  transform: translateY(-3px);
+.explore:hover {
+  background: #38bdf8;
+  color: white;
+  transform: scale(1.05);
 }
 
-.key:active {
-  transform: scale(.94);
+.arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  border: none;
+  border-radius: 50%;
+  width: 48px;
+  height: 48px;
+  background: rgba(255,255,255,0.85);
+  color: #111;
+  font-size: 20px;
+  cursor: pointer;
+  z-index: 2;
 }
 
-.clear {
-  background: #39334e;
-  color: #c4b5fd;
-  font-size: 16px;
-}
-
-.operator {
-  background: #352a52;
-  color: #c4a5ff;
-  font-size: 24px;
-}
-
-.equal {
-  background: linear-gradient(135deg, #8b5cf6, #6366f1);
+.arrow:hover {
+  background: #38bdf8;
   color: white;
 }
 
-.footer {
-  display: flex;
-  justify-content: space-between;
+.left {
+  left: 20px;
+}
+
+.right {
+  right: 20px;
+}
+
+.dots {
   margin-top: 25px;
-  color: #777b94;
-  font-size: 8px;
-  letter-spacing: 1px;
 }
 
-@media (max-width: 420px) {
-  .calculator {
-    width: 100%;
-    padding: 22px;
+.dot {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  margin: 0 7px;
+  border-radius: 50%;
+  background: #64748b;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.active-dot {
+  width: 30px;
+  border-radius: 10px;
+  background: #38bdf8;
+}
+
+.counter {
+  margin-top: 15px;
+  color: #cbd5e1;
+  letter-spacing: 3px;
+}
+
+@media (max-width: 600px) {
+  .carousel {
+    height: 350px;
   }
 
-  .key {
-    height: 58px;
+  .overlay h2 {
+    font-size: 28px;
+  }
+
+  .overlay p {
+    font-size: 14px;
+  }
+
+  h1 {
+    font-size: 28px;
   }
 }
 ```
-## Index.css
-```
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-html, body, #root {
-  width: 100%;
-  min-height: 100%;
-}
-
-body {
-  font-family: Arial, sans-serif;
-  background: #090b16;
-}
-```
-
 
 
 ## OUTPUT
-<img width="1912" height="382" alt="image" src="https://github.com/user-attachments/assets/0c9be35c-1a82-4b30-9d63-650f1b08845d" />
-<img width="1917" height="963" alt="Screenshot 2026-11-20 153200" src="https://github.com/user-attachments/assets/3ae5381e-459d-48e5-8d23-138ca3c9485a" />
+<img width="1917" height="967" alt="image" src="https://github.com/user-attachments/assets/21f09593-6ffe-4b6e-99d1-530b3e55d08a" />
+<img width="1782" height="807" alt="image" src="https://github.com/user-attachments/assets/7a322f65-fe48-4bcd-9a96-25833234f3cd" />
 
 
 
 
 ## RESULT
-The program for developing a simple calculator in React.js is executed successfully.
+The program for creating Image Carousel using React is executed successfully.
